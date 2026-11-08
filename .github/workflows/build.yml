@@ -1,0 +1,35 @@
+name: Build RDRS Browser installer
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip source
+        run: Expand-Archive -Path RDRS-Browser-Source.zip -DestinationPath src -Force
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install build tools
+        working-directory: src/rdrs-browser
+        run: npm install
+
+      - name: Build installer
+        working-directory: src/rdrs-browser
+        run: npx electron-builder --win nsis --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: RDRS-Browser-Setup
+          path: src/rdrs-browser/dist/*.exe
+          if-no-files-found: error
