@@ -1,0 +1,15 @@
+# ------------------------------------------------------------------
+# Root guard: if the web server points at the project root instead of
+# /public, forward every request into /public and hide everything else.
+# Production should set DocumentRoot to /public directly.
+# ------------------------------------------------------------------
+Options -Indexes
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(\.env|\.git|composer\.(json|lock)|app|bootstrap|config|database|lang|routes|storage|vendor)(/|$) - [F,L,NC]
+    RewriteCond %{REQUEST_URI} !/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
