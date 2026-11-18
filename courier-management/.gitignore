@@ -11,6 +11,7 @@
 !/storage/uploads/**/.gitkeep
 /public/uploads/*
 !/public/uploads/.gitkeep
+!/public/uploads/.htaccess
 .idea/
 .vscode/
 *.log
