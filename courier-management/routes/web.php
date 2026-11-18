@@ -13,7 +13,9 @@
 declare(strict_types=1);
 
 use App\Controllers\Api\HealthController;
+use App\Controllers\HomeController;
 
 /** @var \App\Core\Router $router */
 
+$router->get('/', [HomeController::class, 'index'])->name('home');
 $router->get('/health', [HealthController::class, 'index'])->name('health');
