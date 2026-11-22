@@ -1,6 +1,6 @@
 <?php
 /** @var array $batch @var array $trainers @var array $fees @var array $routine @var array $modules @var array $centerTrainers
- *  @var array $rooms @var int $enrolledCount @var array $next @var bool $canManage @var bool $canRoutine */
+ *  @var array $rooms @var array $enrollments @var int $enrolledCount @var array $next @var bool $canManage @var bool $canRoutine */
 use App\Controllers\BatchController;
 use App\Services\FeeStructure;
 $this->layout('layouts/app', ['title' => $batch['batch_code']]);
@@ -52,7 +52,35 @@ $pct = (int) $batch['capacity'] > 0 ? min(100, (int) round(100 * $enrolledCount 
       </table></div>
   </div>
 
-  <div class="col-lg-8" id="routine">
+  <div class="col-lg-8" id="trainees">
+    <div class="card mb-3"><div class="card-header bg-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
+      <span class="fw-semibold"><i class="bi bi-mortarboard me-1"></i><?= e(__('students.title')) ?> (<?= num($enrolledCount) ?>)</span>
+      <span class="d-flex gap-2">
+        <?php if (can('attendance.view') && in_array($batch['status'], ['running', 'completed'], true)): ?><a class="btn btn-sm btn-outline-secondary" href="<?= e(url('/batches/' . $batch['id'] . '/attendance')) ?>"><i class="bi bi-calendar-check me-1"></i><?= e(__('attendance.register')) ?></a><?php endif; ?>
+        <?php if (can('attendance.take') && $batch['status'] === 'running'): ?><a class="btn btn-sm btn-primary" href="<?= e(url('/batches/' . $batch['id'] . '/attendance/take')) ?>"><i class="bi bi-check2-square me-1"></i><?= e(__('attendance.take')) ?></a><?php endif; ?>
+        <?php if (can('student.view')): ?><a class="btn btn-sm btn-outline-secondary" href="<?= e(url('/students', ['batch_id' => $batch['id']])) ?>"><i class="bi bi-list"></i></a><?php endif; ?>
+      </span></div>
+      <div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+        <thead class="table-light"><tr><th class="ps-3"><?= e(__('admission.roll')) ?></th><th><?= e(__('students.name_en')) ?></th><th class="d-none d-md-table-cell"><?= e(__('students.mobile')) ?></th>
+          <th class="text-center"><?= e(__('attendance.percent')) ?></th><?php if (can('fee.view')): ?><th class="text-end pe-3"><?= e(__('admission.due')) ?></th><?php endif; ?></tr></thead>
+        <tbody>
+        <?php foreach ($enrollments as $en): ?>
+          <tr class="<?= in_array($en['status'], ['admitted', 'running'], true) ? '' : 'text-body-secondary' ?>">
+            <td class="ps-3"><?= e($en['roll_no']) ?></td>
+            <td><div class="d-flex align-items-center gap-2"><?= $this->insert('students/_avatar', ['s' => ['id' => $en['student_id'], 'photo_path' => $en['photo_path']], 'size' => 28]) ?>
+              <?php if (can('enrollment.view')): ?><a href="<?= e(url('/enrollments/' . $en['id'])) ?>"><?= e(loc($en, 'name')) ?></a><?php else: ?><?= e(loc($en, 'name')) ?><?php endif; ?>
+              <?php if (!in_array($en['status'], ['admitted', 'running'], true)): ?><span class="badge text-bg-secondary"><?= e(__('admission.status.' . $en['status'])) ?></span><?php endif; ?></div></td>
+            <td class="d-none d-md-table-cell"><?= e($en['mobile']) ?></td>
+            <td class="text-center"><?= $en['attendance_percent'] !== null ? num($en['attendance_percent'], 0) . '%' : '—' ?></td>
+            <?php if (can('fee.view')): ?><td class="text-end pe-3 <?= (float) $en['overdue'] > 0 ? 'text-danger fw-semibold' : '' ?>"><?= money($en['due']) ?></td><?php endif; ?>
+          </tr>
+        <?php endforeach; ?>
+        <?php if ($enrollments === []): ?><tr><td colspan="5" class="ps-3 text-body-secondary"><?= e(__('common.no_records')) ?></td></tr><?php endif; ?>
+        </tbody></table></div>
+    </div>
+  </div>
+
+  <div class="col-lg-8 offset-lg-4" id="routine">
     <div class="card"><div class="card-header bg-body fw-semibold"><i class="bi bi-calendar3-week me-1"></i><?= e(__('routine.weekly')) ?></div>
       <?= $this->insert('batches/_routine_table', ['slots' => $routine, 'showBatch' => false,
           'deleteUrl' => $canRoutine ? static fn(array $s): string => url('/batches/' . $batch['id'] . '/routine/' . $s['id']) : null]) ?>

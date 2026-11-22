@@ -41,6 +41,19 @@
     sel.addEventListener('change', function () { sel.form.submit(); });
   });
 
+  // Checkbox / date that re-submits its GET form (admission fee preview, attendance date).
+  document.querySelectorAll('input[data-autosubmit-check], input[data-autosubmit-date]').forEach(function (el) {
+    el.addEventListener('change', function () { el.form.submit(); });
+  });
+
+  // Attendance: "all present" button.
+  document.querySelectorAll('[data-mark-all]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mark = btn.getAttribute('data-mark-all');
+      document.querySelectorAll('input[data-mark="' + mark + '"]').forEach(function (r) { r.checked = true; });
+    });
+  });
+
   // District -> upazila dependent select: <select data-upazila-target="upazila_id">
   var base = (document.querySelector('a.navbar-brand') || { getAttribute: function () { return '/'; } }).getAttribute('href').replace(/\/$/, '');
   document.querySelectorAll('select[data-upazila-target]').forEach(function (district) {

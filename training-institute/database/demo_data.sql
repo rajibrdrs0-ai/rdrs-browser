@@ -64,3 +64,27 @@ INSERT INTO `number_sequences` (`seq_key`, `seq_period`, `last_value`) VALUES ('
 
 -- Link the demo trainer login to trainer Nasrin Akter.
 UPDATE `users` SET `staff_id` = 102 WHERE `username` = 'trainer.rangpur';
+
+-- ---- Phase 4 demo: trainees and a batch open for admission ------------------------
+INSERT INTO `students` (`id`, `registration_no`, `center_id`, `name_en`, `name_bn`, `gender`, `date_of_birth`, `nid_no`, `birth_reg_no`, `mobile`,
+                        `father_name`, `father_mobile`, `mother_name`, `permanent_upazila_id`, `permanent_address`, `highest_education`, `disability`,
+                        `employment_status_before`, `household_income_monthly`) VALUES
+ (101, 'RNG-2026-00001', 101, 'Md. Rakib Hasan',  'মোঃ রাকিব হাসান',  'male',   '2003-04-12', '4612345678', NULL, '01810000101', 'Abdul Hamid', '01810000201', 'Rokeya Begum', (SELECT u.id FROM upazilas u JOIN districts d ON d.id=u.district_id WHERE d.name_en='Rangpur'), 'Village Lalbag', 'HSC', 'none', 'unemployed', 12000),
+ (102, 'RNG-2026-00002', 101, 'Sumaiya Akter',    'সুমাইয়া আক্তার',   'female', '2004-09-03', '4612345679', NULL, '01810000102', 'Mofizul Islam', NULL, 'Shirin Akter', (SELECT u.id FROM upazilas u JOIN districts d ON d.id=u.district_id WHERE d.name_en='Rangpur'), 'Village Kamal Kachna', 'SSC', 'none', 'student', 9000),
+ (103, 'RNG-2026-00003', 101, 'Jahid Islam',      'জাহিদ ইসলাম',     'male',   '2001-01-20', '4612345680', NULL, '01810000103', 'Nurul Islam', NULL, 'Hasina Begum', NULL, NULL, 'SSC', 'physical', 'unemployed', 7000),
+ (104, 'RNG-2026-00004', 101, 'Moushumi Rani',    'মৌসুমী রানী',      'female', '2002-06-15', '4612345681', NULL, '01810000104', 'Sukumar Roy', NULL, 'Anjali Rani', NULL, NULL, 'HSC', 'none', 'self_employed', 15000),
+ (105, 'RNG-2026-00005', 101, 'Shafiqul Alam',    'শফিকুল আলম',      'male',   '1999-11-30', '4612345682', NULL, '01810000105', 'Rahmat Ali', NULL, 'Jahanara Begum', NULL, NULL, 'Degree', 'none', 'unemployed', 11000),
+ (106, 'RNG-2026-00006', 101, 'Tania Khatun',     'তানিয়া খাতুন',     'female', '2011-02-10', NULL, '20111234567890123', '01810000106', 'Abul Kalam', '01810000206', 'Morjina Begum', NULL, NULL, 'Class 8', 'none', 'student', 6000);
+INSERT INTO `number_sequences` (`seq_key`, `seq_period`, `last_value`) VALUES ('student:RNG', '2026', 6);
+
+INSERT INTO `batches` (`id`, `batch_code`, `center_id`, `course_id`, `name`, `shift`, `start_date`, `end_date`, `class_start_time`, `class_end_time`,
+                       `class_days`, `capacity`, `room_id`, `lead_trainer_id`, `funding_source`, `status`) VALUES
+ (101, 'RNG-ICT-COA-2026-90', 101, 101, 'November Morning (demo)', 'morning', '2026-11-01', '2027-01-31', '09:00:00', '13:00:00',
+  'sat,sun,mon,tue,wed,thu', 25, (SELECT id FROM rooms WHERE center_id=101 AND name='Computer Lab 1'), 101, 'Self-financed', 'admission_open');
+INSERT INTO `batch_trainers` (`batch_id`, `staff_id`, `role`) VALUES (101, 101, 'lead'), (101, 102, 'assistant');
+INSERT INTO `class_routines` (`batch_id`, `weekday`, `start_time`, `end_time`, `module_id`, `staff_id`, `room_id`, `session_type`)
+SELECT 101, d.day, '09:00:00', '11:00:00', (SELECT id FROM course_modules WHERE course_id=101 AND sequence_no=1), 101, (SELECT id FROM rooms WHERE center_id=101 AND name='Computer Lab 1'), 'both'
+  FROM (SELECT 'sat' AS day UNION ALL SELECT 'sun' UNION ALL SELECT 'mon' UNION ALL SELECT 'tue' UNION ALL SELECT 'wed' UNION ALL SELECT 'thu') d;
+INSERT INTO `class_routines` (`batch_id`, `weekday`, `start_time`, `end_time`, `module_id`, `staff_id`, `room_id`, `session_type`)
+SELECT 101, d.day, '11:00:00', '13:00:00', (SELECT id FROM course_modules WHERE course_id=101 AND sequence_no=2), 102, (SELECT id FROM rooms WHERE center_id=101 AND name='Computer Lab 1'), 'practical'
+  FROM (SELECT 'sat' AS day UNION ALL SELECT 'sun' UNION ALL SELECT 'mon' UNION ALL SELECT 'tue' UNION ALL SELECT 'wed' UNION ALL SELECT 'thu') d;

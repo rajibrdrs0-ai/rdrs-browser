@@ -89,6 +89,11 @@ final class BatchController extends Controller
             'centerTrainers' => $this->trainersOf((int) $batch['center_id']),
             'rooms'    => Database::all('SELECT id, name FROM rooms WHERE center_id = ? AND is_active = 1 ORDER BY name', [$batch['center_id']]),
             'enrolledCount' => (int) $batch['enrolled'],
+            'enrollments' => Database::all(
+                "SELECT e.id, e.roll_no, e.status, e.attendance_percent, e.net_fee, s.id AS student_id, s.name_en, s.name_bn, s.mobile, s.photo_path,
+                        COALESCE(d.due, 0) AS due, COALESCE(d.overdue, 0) AS overdue
+                   FROM enrollments e JOIN students s ON s.id = e.student_id LEFT JOIN v_enrollment_dues d ON d.enrollment_id = e.id
+                  WHERE e.batch_id = ? AND e.status <> 'cancelled' ORDER BY CAST(e.roll_no AS UNSIGNED)", [$batch['id']]),
             'next'     => self::FLOW[$batch['status']],
             'canManage'=> Rbac::can('batch.manage'),
             'canRoutine' => Rbac::can('routine.manage') && in_array($batch['status'], ['planned', 'admission_open', 'running'], true),

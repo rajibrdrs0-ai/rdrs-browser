@@ -6,7 +6,10 @@
 declare(strict_types=1);
 
 use App\Controllers\Api\HealthController;
+use App\Controllers\AttendanceController;
 use App\Controllers\AuthController;
+use App\Controllers\EnrollmentController;
+use App\Controllers\StudentController;
 use App\Controllers\BatchController;
 use App\Controllers\CenterController;
 use App\Controllers\CourseController;
@@ -98,5 +101,33 @@ $router->group(['middleware' => ['csrf']], static function ($router): void {
         $router->post('/batches/{id:\d+}/routine', [BatchController::class, 'storeRoutine'], ['permission:routine.manage']);
         $router->delete('/batches/{id:\d+}/routine/{slotId:\d+}', [BatchController::class, 'deleteRoutine'], ['permission:routine.manage']);
         $router->get('/routine', [BatchController::class, 'timetable'], ['permission:batch.view']);
+
+        // Trainees
+        $router->get('/students', [StudentController::class, 'index'], ['permission:student.view']);
+        $router->get('/students/create', [StudentController::class, 'create'], ['permission:student.create']);
+        $router->post('/students', [StudentController::class, 'store'], ['permission:student.create']);
+        $router->get('/students/{id:\d+}', [StudentController::class, 'show'], ['permission:student.view']);
+        $router->get('/students/{id:\d+}/edit', [StudentController::class, 'edit'], ['permission:student.update']);
+        $router->put('/students/{id:\d+}', [StudentController::class, 'update'], ['permission:student.update']);
+        $router->get('/students/{id:\d+}/photo', [StudentController::class, 'photo'], ['permission:student.view']);
+        $router->post('/students/{id:\d+}/documents', [StudentController::class, 'storeDocument'], ['permission:student.documents']);
+        $router->get('/students/{id:\d+}/documents/{docId:\d+}', [StudentController::class, 'document'], ['permission:student.documents']);
+        $router->delete('/students/{id:\d+}/documents/{docId:\d+}', [StudentController::class, 'deleteDocument'], ['permission:student.documents']);
+        $router->post('/students/{id:\d+}/educations', [StudentController::class, 'storeEducation'], ['permission:student.update']);
+        $router->delete('/students/{id:\d+}/educations/{eduId:\d+}', [StudentController::class, 'deleteEducation'], ['permission:student.update']);
+
+        // Admission / enrolment
+        $router->get('/enrollments/create', [EnrollmentController::class, 'create'], ['permission:enrollment.create']);
+        $router->post('/enrollments', [EnrollmentController::class, 'store'], ['permission:enrollment.create']);
+        $router->get('/enrollments/{id:\d+}', [EnrollmentController::class, 'show'], ['permission:enrollment.view']);
+        $router->post('/enrollments/{id:\d+}/status', [EnrollmentController::class, 'changeStatus'], ['permission:enrollment.update_status']);
+        $router->post('/enrollments/{id:\d+}/transfer', [EnrollmentController::class, 'transfer'], ['permission:enrollment.transfer']);
+
+        // Attendance
+        $router->get('/attendance', [AttendanceController::class, 'index'], ['permission:attendance.view']);
+        $router->get('/batches/{id:\d+}/attendance', [AttendanceController::class, 'register'], ['permission:attendance.view']);
+        $router->get('/batches/{id:\d+}/attendance/take', [AttendanceController::class, 'take'], ['permission:attendance.take']);
+        $router->post('/batches/{id:\d+}/attendance', [AttendanceController::class, 'save'], ['permission:attendance.take']);
+        $router->post('/class-sessions/{sessionId:\d+}/lock', [AttendanceController::class, 'lock'], ['permission:attendance.lock']);
     });
 });

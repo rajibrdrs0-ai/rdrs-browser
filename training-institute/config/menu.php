@@ -21,8 +21,8 @@ return [
     ['label' => 'menu.courses',      'icon' => 'journal-bookmark', 'url' => '/courses',      'perm' => ['course.view'], 'ready' => true],
     ['label' => 'menu.batches',      'icon' => 'collection',       'url' => '/batches',      'perm' => ['batch.view'], 'ready' => true],
     ['label' => 'menu.routine',      'icon' => 'calendar3-week',   'url' => '/routine',      'perm' => ['batch.view'], 'ready' => true],
-    ['label' => 'menu.students',     'icon' => 'mortarboard',      'url' => '/students',     'perm' => ['student.view'], 'ready' => false],
-    ['label' => 'menu.attendance',   'icon' => 'calendar-check',   'url' => '/attendance',   'perm' => ['attendance.view'], 'ready' => false],
+    ['label' => 'menu.students',     'icon' => 'mortarboard',      'url' => '/students',     'perm' => ['student.view'], 'ready' => true],
+    ['label' => 'menu.attendance',   'icon' => 'calendar-check',   'url' => '/attendance',   'perm' => ['attendance.view'], 'ready' => true],
     ['label' => 'menu.exams',        'icon' => 'clipboard-check',  'url' => '/assessments',  'perm' => ['assessment.view'], 'ready' => false],
     ['label' => 'menu.certificates', 'icon' => 'award',            'url' => '/certificates', 'perm' => ['certificate.view'], 'ready' => false],
 

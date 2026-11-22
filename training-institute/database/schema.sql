@@ -1624,16 +1624,21 @@ DELIMITER ;
 -- 11. REPORTING VIEWS
 -- =====================================================================
 CREATE OR REPLACE VIEW `v_enrollment_dues` AS
-SELECT e.id AS enrollment_id, e.center_id, e.batch_id, e.student_id, s.registration_no, s.name_en, s.mobile,
-       e.net_fee,
-       COALESCE(SUM(CASE WHEN p.status = 'valid' THEN p.amount END), 0) AS paid,
-       e.net_fee - COALESCE(SUM(CASE WHEN p.status = 'valid' THEN p.amount END), 0) AS due
-  FROM enrollments e
-  JOIN students s ON s.id = e.student_id
-  LEFT JOIN fee_invoices i ON i.enrollment_id = e.id AND i.status <> 'cancelled'
-  LEFT JOIN fee_payments p ON p.invoice_id = i.id
- WHERE e.status NOT IN ('cancelled')
- GROUP BY e.id, e.center_id, e.batch_id, e.student_id, s.registration_no, s.name_en, s.mobile, e.net_fee;
+-- due = what has actually been invoiced (cancelled installments excluded) minus valid receipts
+SELECT x.enrollment_id, x.center_id, x.batch_id, x.student_id, x.registration_no, x.name_en, x.mobile,
+       x.net_fee, x.invoiced, x.paid, x.invoiced - x.paid AS due, x.overdue
+  FROM (
+    SELECT e.id AS enrollment_id, e.center_id, e.batch_id, e.student_id, s.registration_no, s.name_en, s.mobile, e.net_fee,
+           (SELECT COALESCE(SUM(i.amount), 0) FROM fee_invoices i
+             WHERE i.enrollment_id = e.id AND i.status <> 'cancelled') AS invoiced,
+           (SELECT COALESCE(SUM(p.amount), 0) FROM fee_payments p JOIN fee_invoices i ON i.id = p.invoice_id
+             WHERE i.enrollment_id = e.id AND p.status = 'valid') AS paid,
+           (SELECT COALESCE(SUM(i.amount - i.paid_amount), 0) FROM fee_invoices i
+             WHERE i.enrollment_id = e.id AND i.status IN ('unpaid','partial') AND i.due_date < CURRENT_DATE) AS overdue
+      FROM enrollments e
+      JOIN students s ON s.id = e.student_id
+     WHERE e.status <> 'cancelled'
+  ) x;
 
 CREATE OR REPLACE VIEW `v_account_balances` AS
 SELECT a.id AS account_id, a.center_id, a.name, a.account_type,

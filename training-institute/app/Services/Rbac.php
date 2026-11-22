@@ -155,6 +155,25 @@ final class Rbac
         return [$sql, $params];
     }
 
+    /**
+     * Trainee visibility. Center/district users see trainees registered at, or
+     * enrolled in, their centers; trainers see trainees of the batches they teach.
+     * @return array{0:string,1:list<int>}
+     */
+    public static function studentFilter(string $alias = 's'): array
+    {
+        if (self::isGlobal()) {
+            return ['1=1', []];
+        }
+        if (self::scope() === 'self') {
+            [$bSql, $bParams] = self::batchFilter('b');
+            return ["{$alias}.id IN (SELECT e.student_id FROM enrollments e JOIN batches b ON b.id = e.batch_id WHERE {$bSql})", $bParams];
+        }
+        [$cSql, $cParams] = self::centerFilter($alias . '.center_id');
+        [$eSql, $eParams] = self::centerFilter('e.center_id');
+        return ["({$cSql} OR {$alias}.id IN (SELECT e.student_id FROM enrollments e WHERE {$eSql}))", array_merge($cParams, $eParams)];
+    }
+
     /** Throw 403 unless the center is inside the user's scope. */
     public static function assertCenter(?int $centerId): void
     {

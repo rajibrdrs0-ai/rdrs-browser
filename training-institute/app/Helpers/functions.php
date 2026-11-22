@@ -272,8 +272,12 @@ if (!function_exists('form_input')) {
         unset($attrs['help']);
         $id = (string) ($attrs['id'] ?? $name);
         $invalid = errors($name) !== [] ? ' is-invalid' : '';
-        $attrs = ['type' => 'text', 'class' => 'form-control' . $invalid, 'id' => $id, 'name' => $name,
-                  'value' => (string) old($name, $value ?? '')] + $attrs;
+        $attrs['class'] = ($attrs['class'] ?? 'form-control') . $invalid;
+        // Caller attributes win over defaults (type=date/number/file, size classes …).
+        $attrs = array_merge(['type' => 'text', 'id' => $id, 'name' => $name, 'value' => (string) old($name, $value ?? '')], $attrs);
+        if ($attrs['type'] === 'file' || $attrs['type'] === 'password') {
+            unset($attrs['value']);
+        }
         return form_label($id, $label, !empty($attrs['required']))
             . '<input' . html_attrs($attrs) . '>'
             . ($help !== null ? '<div class="form-text">' . e($help) . '</div>' : '')
@@ -294,7 +298,7 @@ if (!function_exists('form_select')) {
         $current = (string) old($name, $selected ?? '');
         $invalid = errors($name) !== [] ? ' is-invalid' : '';
         $html = form_label($id, $label, !empty($attrs['required']))
-            . '<select' . html_attrs(['class' => 'form-select' . $invalid, 'id' => $id, 'name' => $name] + $attrs) . '>';
+            . '<select' . html_attrs(array_merge(['id' => $id, 'name' => $name], $attrs, ['class' => ($attrs['class'] ?? 'form-select') . $invalid])) . '>';
         if ($placeholder !== false) {
             $html .= '<option value="">' . e($placeholder) . '</option>';
         }
@@ -311,7 +315,7 @@ if (!function_exists('form_textarea')) {
         $id = (string) ($attrs['id'] ?? $name);
         $invalid = errors($name) !== [] ? ' is-invalid' : '';
         return form_label($id, $label, !empty($attrs['required']))
-            . '<textarea' . html_attrs(['class' => 'form-control' . $invalid, 'id' => $id, 'name' => $name, 'rows' => 3] + $attrs) . '>'
+            . '<textarea' . html_attrs(array_merge(['id' => $id, 'name' => $name, 'rows' => 3], $attrs, ['class' => ($attrs['class'] ?? 'form-control') . $invalid])) . '>'
             . e(old($name, $value ?? '')) . '</textarea>' . field_error($name);
     }
 }
@@ -326,7 +330,7 @@ if (!function_exists('form_check')) {
         }
         return '<div class="form-check">'
             . '<input type="hidden" name="' . e($name) . '" value="0">'
-            . '<input' . html_attrs(['class' => 'form-check-input', 'type' => 'checkbox', 'id' => $id, 'name' => $name, 'value' => '1', 'checked' => $checked] + $attrs) . '>'
+            . '<input' . html_attrs(array_merge(['class' => 'form-check-input', 'type' => 'checkbox', 'id' => $id, 'name' => $name, 'value' => '1'], $attrs, ['checked' => $checked])) . '>'
             . '<label class="form-check-label" for="' . e($id) . '">' . e($label) . '</label></div>';
     }
 }
