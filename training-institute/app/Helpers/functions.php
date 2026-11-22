@@ -228,3 +228,141 @@ if (!function_exists('can')) {
         return \App\Services\Rbac::can($permission);
     }
 }
+
+/* ------------------------------------------------------------------
+ * Form helpers — Bootstrap markup with old() re-population and
+ * per-field validation errors. All output is escaped.
+ * ------------------------------------------------------------------ */
+
+if (!function_exists('html_attrs')) {
+    /** @param array<string,scalar|bool|null> $attrs */
+    function html_attrs(array $attrs): string
+    {
+        $out = '';
+        foreach ($attrs as $key => $value) {
+            if ($value === false || $value === null) {
+                continue;
+            }
+            $out .= ' ' . e($key) . ($value === true ? '' : '="' . e($value) . '"');
+        }
+        return $out;
+    }
+}
+
+if (!function_exists('field_error')) {
+    function field_error(string $name): string
+    {
+        $messages = errors(str_replace(['[', ']'], ['.', ''], $name));
+        return $messages === [] ? '' : '<div class="invalid-feedback d-block">' . e(implode(' ', $messages)) . '</div>';
+    }
+}
+
+if (!function_exists('form_label')) {
+    function form_label(string $id, string $label, bool $required): string
+    {
+        return '<label class="form-label" for="' . e($id) . '">' . e($label) . ($required ? ' <span class="text-danger">*</span>' : '') . '</label>';
+    }
+}
+
+if (!function_exists('form_input')) {
+    /** @param array<string,scalar|bool|null> $attrs  extra: 'help' => text */
+    function form_input(string $name, string $label, mixed $value = '', array $attrs = []): string
+    {
+        $help = $attrs['help'] ?? null;
+        unset($attrs['help']);
+        $id = (string) ($attrs['id'] ?? $name);
+        $invalid = errors($name) !== [] ? ' is-invalid' : '';
+        $attrs = ['type' => 'text', 'class' => 'form-control' . $invalid, 'id' => $id, 'name' => $name,
+                  'value' => (string) old($name, $value ?? '')] + $attrs;
+        return form_label($id, $label, !empty($attrs['required']))
+            . '<input' . html_attrs($attrs) . '>'
+            . ($help !== null ? '<div class="form-text">' . e($help) . '</div>' : '')
+            . field_error($name);
+    }
+}
+
+if (!function_exists('form_select')) {
+    /**
+     * @param array<int|string,string> $options value => label
+     * @param array<string,scalar|bool|null> $attrs  extra: 'placeholder' => text|false
+     */
+    function form_select(string $name, string $label, array $options, mixed $selected = '', array $attrs = []): string
+    {
+        $placeholder = array_key_exists('placeholder', $attrs) ? $attrs['placeholder'] : __('common.select');
+        unset($attrs['placeholder']);
+        $id = (string) ($attrs['id'] ?? $name);
+        $current = (string) old($name, $selected ?? '');
+        $invalid = errors($name) !== [] ? ' is-invalid' : '';
+        $html = form_label($id, $label, !empty($attrs['required']))
+            . '<select' . html_attrs(['class' => 'form-select' . $invalid, 'id' => $id, 'name' => $name] + $attrs) . '>';
+        if ($placeholder !== false) {
+            $html .= '<option value="">' . e($placeholder) . '</option>';
+        }
+        foreach ($options as $value => $text) {
+            $html .= '<option value="' . e($value) . '"' . ((string) $value === $current ? ' selected' : '') . '>' . e($text) . '</option>';
+        }
+        return $html . '</select>' . field_error($name);
+    }
+}
+
+if (!function_exists('form_textarea')) {
+    function form_textarea(string $name, string $label, mixed $value = '', array $attrs = []): string
+    {
+        $id = (string) ($attrs['id'] ?? $name);
+        $invalid = errors($name) !== [] ? ' is-invalid' : '';
+        return form_label($id, $label, !empty($attrs['required']))
+            . '<textarea' . html_attrs(['class' => 'form-control' . $invalid, 'id' => $id, 'name' => $name, 'rows' => 3] + $attrs) . '>'
+            . e(old($name, $value ?? '')) . '</textarea>' . field_error($name);
+    }
+}
+
+if (!function_exists('form_check')) {
+    function form_check(string $name, string $label, bool $checked = false, array $attrs = []): string
+    {
+        $id = (string) ($attrs['id'] ?? $name);
+        $oldAll = \App\Core\Session::getFlash('old', []);
+        if (is_array($oldAll) && $oldAll !== []) {
+            $checked = !empty($oldAll[$name]);
+        }
+        return '<div class="form-check">'
+            . '<input type="hidden" name="' . e($name) . '" value="0">'
+            . '<input' . html_attrs(['class' => 'form-check-input', 'type' => 'checkbox', 'id' => $id, 'name' => $name, 'value' => '1', 'checked' => $checked] + $attrs) . '>'
+            . '<label class="form-check-label" for="' . e($id) . '">' . e($label) . '</label></div>';
+    }
+}
+
+if (!function_exists('options')) {
+    /**
+     * Turn DB rows into select options using the localised name column.
+     * @param list<array<string,mixed>> $rows
+     * @return array<int|string,string>
+     */
+    function options(array $rows, string $base = 'name', string $key = 'id', ?string $prefixKey = null): array
+    {
+        $out = [];
+        foreach ($rows as $row) {
+            $out[$row[$key]] = ($prefixKey !== null ? $row[$prefixKey] . ' — ' : '') . loc($row, $base);
+        }
+        return $out;
+    }
+}
+
+if (!function_exists('fmt_date')) {
+    function fmt_date(?string $date): string
+    {
+        if ($date === null || $date === '') {
+            return '—';
+        }
+        $out = date('d/m/Y', strtotime($date) ?: 0);
+        return current_locale() === 'bn' ? bn_digits($out) : $out;
+    }
+}
+
+if (!function_exists('num')) {
+    /** Locale-aware integer / decimal display. */
+    function num(int|float|string|null $value, int $decimals = 0): string
+    {
+        $out = number_format((float) $value, $decimals);
+        return current_locale() === 'bn' ? bn_digits($out) : $out;
+    }
+}

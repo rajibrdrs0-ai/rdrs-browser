@@ -131,6 +131,38 @@ final class Rbac
         return [$column . ' IN ' . Database::in($ids), $ids];
     }
 
+    /** Staff record linked to the logged-in user (trainers), or null. */
+    public static function staffId(): ?int
+    {
+        $id = Auth::user()['staff_id'] ?? null;
+        return $id !== null ? (int) $id : null;
+    }
+
+    /**
+     * Batch visibility: center scope for everyone, and for self-scoped users
+     * (trainers) additionally only batches they teach.
+     * @return array{0:string,1:list<int>}
+     */
+    public static function batchFilter(string $alias = 'b'): array
+    {
+        [$sql, $params] = self::centerFilter($alias . '.center_id');
+        if (self::scope() === 'self') {
+            $staffId = self::staffId() ?? 0;
+            $sql .= " AND ({$alias}.lead_trainer_id = ? OR {$alias}.id IN (SELECT batch_id FROM batch_trainers WHERE staff_id = ?))";
+            $params[] = $staffId;
+            $params[] = $staffId;
+        }
+        return [$sql, $params];
+    }
+
+    /** Throw 403 unless the center is inside the user's scope. */
+    public static function assertCenter(?int $centerId): void
+    {
+        if (!self::canAccessCenter($centerId)) {
+            throw new \App\Core\HttpException(403, __('errors.forbidden'));
+        }
+    }
+
     /** Roles the current user may assign to others. @return list<array<string,mixed>> */
     public static function assignableRoles(): array
     {

@@ -24,3 +24,43 @@ INSERT INTO `users` (`role_id`, `center_id`, `district_id`, `name`, `name_bn`, `
 
 INSERT INTO `finance_accounts` (`center_id`, `account_type`, `name`) VALUES
  (101, 'cash', 'Rangpur Cash'), (102, 'cash', 'Mithapukur Cash'), (103, 'cash', 'Kurigram Cash');
+
+-- ---- Phase 2 demo: courses, curriculum, fees, rooms, staff -------------------
+INSERT INTO `courses` (`id`, `code`, `trade_id`, `name_en`, `name_bn`, `course_type`, `nsqf_level`, `duration_months`, `total_hours`, `min_qualification`, `min_age`, `max_age`) VALUES
+ (101, 'ICT-COA', (SELECT id FROM trades WHERE code='ICT'),  'Computer Office Application', 'কম্পিউটার অফিস অ্যাপ্লিকেশন', 'nsda_cbt', 2, 3.0, 360, 'SSC', 16, 45),
+ (102, 'ELEC-HW', (SELECT id FROM trades WHERE code='ELEC'), 'Electrical House Wiring',     'ইলেকট্রিক্যাল হাউস ওয়্যারিং',    'nsda_cbt', 1, 3.0, 360, 'Class 8', 16, 45),
+ (103, 'GARM-DM', (SELECT id FROM trades WHERE code='GARM'), 'Dress Making & Tailoring',    'ড্রেস মেকিং ও টেইলারিং',          'short',    NULL, 2.0, 240, NULL, 15, 50);
+
+INSERT INTO `course_modules` (`course_id`, `sequence_no`, `title_en`, `title_bn`, `theory_hours`, `practical_hours`) VALUES
+ (101, 1, 'Computer fundamentals & OS', 'কম্পিউটার পরিচিতি ও অপারেটিং সিস্টেম', 20, 40),
+ (101, 2, 'Word processing (MS Word / Bangla typing)', 'ওয়ার্ড প্রসেসিং ও বাংলা টাইপিং', 20, 70),
+ (101, 3, 'Spreadsheet (MS Excel)', 'স্প্রেডশিট (এমএস এক্সেল)', 20, 70),
+ (101, 4, 'Presentation, internet & e-mail', 'প্রেজেন্টেশন, ইন্টারনেট ও ই-মেইল', 20, 60),
+ (101, 5, 'Workplace communication & safety', 'কর্মক্ষেত্রে যোগাযোগ ও নিরাপত্তা', 20, 20),
+ (102, 1, 'Electrical safety & tools', 'বৈদ্যুতিক নিরাপত্তা ও যন্ত্রপাতি', 30, 30),
+ (102, 2, 'House wiring circuits', 'হাউস ওয়্যারিং সার্কিট', 30, 150),
+ (102, 3, 'Earthing & fault finding', 'আর্থিং ও ত্রুটি নির্ণয়', 20, 100);
+
+INSERT INTO `course_fees` (`course_id`, `fee_head_id`, `center_id`, `amount`, `is_optional`, `effective_from`) VALUES
+ (101, (SELECT id FROM fee_heads WHERE code='ADMISSION'),   NULL, 500.00,  0, '2026-07-01'),
+ (101, (SELECT id FROM fee_heads WHERE code='COURSE'),      NULL, 6000.00, 0, '2026-07-01'),
+ (101, (SELECT id FROM fee_heads WHERE code='EXAM'),        NULL, 500.00,  0, '2026-07-01'),
+ (101, (SELECT id FROM fee_heads WHERE code='RESIDENTIAL'), NULL, 3000.00, 1, '2026-07-01'),
+ (101, (SELECT id FROM fee_heads WHERE code='COURSE'),      103,  5000.00, 0, '2026-07-01'),
+ (102, (SELECT id FROM fee_heads WHERE code='ADMISSION'),   NULL, 500.00,  0, '2026-07-01'),
+ (102, (SELECT id FROM fee_heads WHERE code='COURSE'),      NULL, 7000.00, 0, '2026-07-01'),
+ (102, (SELECT id FROM fee_heads WHERE code='MATERIAL'),    NULL, 1500.00, 0, '2026-07-01');
+
+INSERT INTO `rooms` (`center_id`, `name`, `room_type`, `capacity`) VALUES
+ (101, 'Computer Lab 1', 'lab', 25), (101, 'Computer Lab 2', 'lab', 25), (101, 'Electrical Workshop', 'workshop', 20),
+ (101, 'Classroom A', 'classroom', 40), (103, 'Computer Lab', 'lab', 20), (103, 'Tailoring Room', 'workshop', 20);
+
+INSERT INTO `staff` (`id`, `employee_code`, `center_id`, `designation_id`, `name`, `name_bn`, `gender`, `mobile`, `employment_type`, `joining_date`, `status`) VALUES
+ (101, 'RNG-0001', 101, (SELECT id FROM designations WHERE name_en='Senior Trainer'), 'Abdul Karim', 'আবদুল করিম', 'male',   '01720000101', 'permanent',   '2024-01-15', 'active'),
+ (102, 'RNG-0002', 101, (SELECT id FROM designations WHERE name_en='Trainer'),        'Nasrin Akter', 'নাসরিন আক্তার', 'female', '01720000102', 'contractual', '2025-03-01', 'active'),
+ (103, 'RNG-0003', 101, (SELECT id FROM designations WHERE name_en='Accountant'),     'Rafiqul Islam', 'রফিকুল ইসলাম', 'male',  '01720000103', 'permanent',   '2023-07-01', 'active'),
+ (104, 'KUR-0001', 103, (SELECT id FROM designations WHERE name_en='Trainer'),        'Shahana Begum', 'শাহানা বেগম', 'female', '01720000104', 'permanent',   '2024-05-10', 'active');
+INSERT INTO `number_sequences` (`seq_key`, `seq_period`, `last_value`) VALUES ('staff', 'RNG', 3), ('staff', 'KUR', 1);
+
+-- Link the demo trainer login to trainer Nasrin Akter.
+UPDATE `users` SET `staff_id` = 102 WHERE `username` = 'trainer.rangpur';

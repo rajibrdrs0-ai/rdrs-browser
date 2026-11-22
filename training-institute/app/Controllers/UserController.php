@@ -114,7 +114,8 @@ final class UserController extends Controller
             $id = Database::lastInsertId();
             $this->syncScopes($id, $data);
             $this->syncOverrides($id, $request);
-            $this->audit('create', $id, null, $data);
+            $audit = $data; unset($audit['extra_centers'], $audit['extra_districts']);
+            \App\Services\Audit::log('create', 'user', $id, null, $audit);
             return $id;
         });
 
@@ -365,15 +366,4 @@ final class UserController extends Controller
         return $pwd;
     }
 
-    private function audit(string $action, int $id, ?array $old, array $new): void
-    {
-        unset($new['extra_centers'], $new['extra_districts']);
-        Database::query(
-            'INSERT INTO audit_logs (user_id, center_id, action, entity_type, entity_id, old_value, new_value, ip_address, user_agent)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [Auth::id(), Auth::user()['center_id'] ?? null, $action, 'user', $id,
-             $old !== null ? json_encode($old, JSON_UNESCAPED_UNICODE) : null, json_encode($new, JSON_UNESCAPED_UNICODE),
-             $this->request->ip(), $this->request->userAgent()]
-        );
-    }
 }

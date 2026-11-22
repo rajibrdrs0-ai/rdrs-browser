@@ -14,6 +14,30 @@ abstract class Controller
     {
     }
 
+    /**
+     * Simple LIMIT/OFFSET pagination.
+     * @param string $from   "FROM … WHERE …" part (no ORDER/LIMIT)
+     * @return array{rows:list<array<string,mixed>>,total:int,page:int,pages:int}
+     */
+    protected function paginate(string $select, string $from, array $params, string $orderBy, int $perPage = 25): array
+    {
+        $total = (int) Database::value('SELECT COUNT(*) ' . $from, $params);
+        $pages = (int) max(1, ceil($total / $perPage));
+        $page = min($pages, max(1, (int) $this->request->query('page', 1)));
+        $rows = Database::all(
+            'SELECT ' . $select . ' ' . $from . ' ORDER BY ' . $orderBy . ' LIMIT ' . $perPage . ' OFFSET ' . (($page - 1) * $perPage),
+            $params
+        );
+        return ['rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages];
+    }
+
+    /** Integer query/route value or null. */
+    protected function intOrNull(mixed $value): ?int
+    {
+        $v = filter_var($value, FILTER_VALIDATE_INT);
+        return $v === false || $v === null ? null : (int) $v;
+    }
+
     /** @param array<string,mixed> $data */
     protected function view(string $template, array $data = [], int $status = 200): Response
     {
