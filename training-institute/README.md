@@ -70,7 +70,18 @@
 * অনুমোদনের পর নম্বর ও লক করা হাজিরা আর বদলানো যায় না।
 * সনদ শুধু অনুমোদিত পাস করা ফলাফলেই দেওয়া যায়।
 
-## চালানোর নিয়ম (লোকাল)
+## ইনস্টল
+
+পূর্ণাঙ্গ নির্দেশনা আছে [`docs/SETUP.md`](docs/SETUP.md)-এ: Windows (Laragon/XAMPP), Linux সার্ভার, HTTPS ও ব্যাকআপ।
+সংক্ষেপে:
+
+```bash
+php bin/install.php
+```
+
+ইনস্টলার ডাটাবেস, সীমিত-অনুমতির DB ইউজার, `.env` ফাইল ও `APP_KEY` তৈরি করে এবং সুপার অ্যাডমিনের পাসওয়ার্ড বসায়।
+
+## চালানোর নিয়ম (হাতে হাতে, ডেভেলপারদের জন্য)
 
 ```bash
 cp .env.example .env
@@ -99,5 +110,7 @@ app/Views         layouts, auth, users, roles, dashboard
 config/menu.php   রোলভিত্তিক সাইডবার মেনু
 lang/bn.php, en.php
 database/schema.sql, demo_data.sql
-docs/GAP_ANALYSIS.md
+bin/install.php   এক কমান্ডে ইনস্টলার (Windows ও Linux)
+deploy/           Apache/Nginx কনফিগ, রাতের ব্যাকআপ স্ক্রিপ্ট
+docs/GAP_ANALYSIS.md, docs/SETUP.md
 ```
