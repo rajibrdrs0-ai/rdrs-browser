@@ -53,8 +53,10 @@ final class CourseController extends Controller
              (SELECT COUNT(*) FROM course_modules m WHERE m.course_id = c.id) AS module_count,
              (SELECT COUNT(*) FROM batches b WHERE b.course_id = c.id AND b.status IN ('admission_open','running') AND {$batchScope}) AS active_batches",
             'FROM courses c JOIN trades t ON t.id = c.trade_id WHERE ' . implode(' AND ', $where),
-            array_merge($batchParams, $params),
-            't.name_en, c.name_en'
+            $params,
+            't.name_en, c.name_en',
+            25,
+            $batchParams
         );
         return $this->view('courses/index', $result + [
             'trades'  => Database::all('SELECT id, name_en, name_bn FROM trades WHERE is_active = 1 ORDER BY name_en'),

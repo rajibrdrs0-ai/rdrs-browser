@@ -17,16 +17,19 @@ abstract class Controller
     /**
      * Simple LIMIT/OFFSET pagination.
      * @param string $from   "FROM … WHERE …" part (no ORDER/LIMIT)
+     * @param list<mixed> $selectParams values for placeholders inside $select
      * @return array{rows:list<array<string,mixed>>,total:int,page:int,pages:int}
      */
-    protected function paginate(string $select, string $from, array $params, string $orderBy, int $perPage = 25): array
+    protected function paginate(string $select, string $from, array $params, string $orderBy, int $perPage = 25, array $selectParams = []): array
     {
+        // $selectParams bind placeholders used only in the SELECT list (e.g. scoped
+        // sub-queries); they must not be passed to the COUNT(*) query.
         $total = (int) Database::value('SELECT COUNT(*) ' . $from, $params);
         $pages = (int) max(1, ceil($total / $perPage));
         $page = min($pages, max(1, (int) $this->request->query('page', 1)));
         $rows = Database::all(
             'SELECT ' . $select . ' ' . $from . ' ORDER BY ' . $orderBy . ' LIMIT ' . $perPage . ' OFFSET ' . (($page - 1) * $perPage),
-            $params
+            array_merge($selectParams, $params)
         );
         return ['rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages];
     }
