@@ -1,0 +1,27 @@
+/* Money receipt — two A5 copies on one A4 sheet */
+.receipt { position: relative; border: 1px solid #333; padding: 14px 18px; font-size: 13px; background: #fff; color: #111; }
+.receipt-head { display: flex; align-items: center; gap: 12px; border-bottom: 2px solid #0b6e4f; padding-bottom: 6px; margin-bottom: 8px; }
+.receipt-title { display: inline-block; margin-top: 4px; padding: 2px 14px; border: 1px solid #0b6e4f; border-radius: 12px; font-weight: 700; color: #0b6e4f; }
+.receipt-copy { width: 90px; color: #555; }
+.receipt-meta, .receipt-lines { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+.receipt-meta td { padding: 2px 0; }
+.receipt-lines td { border-bottom: 1px dotted #999; padding: 3px 0; }
+.receipt-total td { font-weight: 700; border-top: 1px solid #333; border-bottom: 2px solid #333; }
+.receipt-words { margin-top: 6px; }
+.receipt-sign { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 28px; }
+.sign-line { border-top: 1px solid #333; padding-top: 2px; min-width: 160px; text-align: center; }
+.receipt-stamp { position: absolute; top: 40%; left: 25%; transform: rotate(-18deg); font-size: 46px; font-weight: 800; color: rgba(200, 0, 0, .35);
+  border: 5px solid rgba(200, 0, 0, .35); padding: 0 18px; border-radius: 8px; pointer-events: none; }
+.print-body { background: #e9ecef; padding: 16px; }
+.print-body .receipt { max-width: 760px; margin: 0 auto; }
+.print-actions { max-width: 760px; margin: 0 auto 10px; text-align: right; }
+.cut-line { max-width: 760px; margin: 14px auto; border-top: 1px dashed #777; }
+@media print {
+  @page { size: A4; margin: 10mm; }
+  .no-print { display: none !important; }
+  .print-body { background: #fff; padding: 0; }
+  .print-body .receipt { max-width: none; height: 130mm; overflow: hidden; }
+  .cut-line { margin: 6mm 0; }
+}
+.receipt-sub td { font-size: 11px; color: #555; border-bottom: 0; padding-bottom: 0; text-transform: uppercase; letter-spacing: .03em; }
+.receipt-item td { font-size: 12px; color: #444; padding-left: 10px; }

@@ -88,3 +88,9 @@ SELECT 101, d.day, '09:00:00', '11:00:00', (SELECT id FROM course_modules WHERE 
 INSERT INTO `class_routines` (`batch_id`, `weekday`, `start_time`, `end_time`, `module_id`, `staff_id`, `room_id`, `session_type`)
 SELECT 101, d.day, '11:00:00', '13:00:00', (SELECT id FROM course_modules WHERE course_id=101 AND sequence_no=2), 102, (SELECT id FROM rooms WHERE center_id=101 AND name='Computer Lab 1'), 'practical'
   FROM (SELECT 'sat' AS day UNION ALL SELECT 'sun' UNION ALL SELECT 'mon' UNION ALL SELECT 'tue' UNION ALL SELECT 'wed' UNION ALL SELECT 'thu') d;
+
+-- ---- Phase 5 demo: more money accounts --------------------------------------------
+INSERT INTO `finance_accounts` (`center_id`, `account_type`, `name`, `bank_name`, `account_number`) VALUES
+ (101, 'mobile_wallet', 'Rangpur bKash Merchant', 'bKash', '01710000999'),
+ (101, 'bank', 'Rangpur Bank Account', 'Demo Bank, Rangpur Branch', '0000-DEMO-101'),
+ (1,   'bank', 'Head Office Bank Account', 'Demo Bank, Head Office', '0000-DEMO-001');

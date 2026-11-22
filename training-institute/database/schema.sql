@@ -922,6 +922,7 @@ CREATE TABLE `fee_waivers` (
   `requested_by`  INT UNSIGNED NOT NULL,
   `approved_by`   INT UNSIGNED NULL,
   `approved_at`   DATETIME NULL,
+  `decision_note` VARCHAR(255) NULL COMMENT 'Reason given when approving/rejecting',
   `created_at`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_fw_enrollment` (`enrollment_id`, `status`),
@@ -946,14 +947,18 @@ CREATE TABLE `refunds` (
   `requested_by`  INT UNSIGNED NOT NULL,
   `approved_by`   INT UNSIGNED NULL,
   `paid_at`       DATETIME NULL,
+  `paid_by`       INT UNSIGNED NULL,
+  `decision_note` VARCHAR(255) NULL,
   `created_at`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_refund_no` (`refund_no`),
+  KEY `idx_refunds_enrollment` (`enrollment_id`, `status`),
   CONSTRAINT `fk_rf_enrollment` FOREIGN KEY (`enrollment_id`) REFERENCES `enrollments` (`id`)      ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT `fk_rf_center`     FOREIGN KEY (`center_id`)     REFERENCES `training_centers` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT `fk_rf_account`    FOREIGN KEY (`account_id`)    REFERENCES `finance_accounts` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT `fk_rf_requester`  FOREIGN KEY (`requested_by`)  REFERENCES `users` (`id`)            ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT `fk_rf_approver`   FOREIGN KEY (`approved_by`)   REFERENCES `users` (`id`)            ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT `fk_rf_payer`      FOREIGN KEY (`paid_by`)       REFERENCES `users` (`id`)            ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT `chk_rf_amount`    CHECK (`amount` > 0),
   CONSTRAINT `chk_rf_maker_checker` CHECK (`approved_by` IS NULL OR `approved_by` <> `requested_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -985,6 +990,7 @@ CREATE TABLE `expenses` (
   `requested_by`  INT UNSIGNED NOT NULL,
   `approved_by`   INT UNSIGNED NULL,
   `approved_at`   DATETIME NULL,
+  `decision_note` VARCHAR(255) NULL,
   `created_at`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`    TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -1012,14 +1018,16 @@ CREATE TABLE `fund_transfers` (
   `status`          ENUM('pending','completed','cancelled') NOT NULL DEFAULT 'pending',
   `created_by`      INT UNSIGNED NOT NULL,
   `confirmed_by`    INT UNSIGNED NULL,
+  `confirmed_at`    DATETIME NULL,
   `created_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_transfer_no` (`transfer_no`),
   CONSTRAINT `fk_ft_from`      FOREIGN KEY (`from_account_id`) REFERENCES `finance_accounts` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT `fk_ft_to`        FOREIGN KEY (`to_account_id`)   REFERENCES `finance_accounts` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  CONSTRAINT `fk_ft_creator`   FOREIGN KEY (`created_by`)      REFERENCES `users` (`id`)            ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT `fk_ft_confirmer` FOREIGN KEY (`confirmed_by`)    REFERENCES `users` (`id`)            ON UPDATE CASCADE ON DELETE SET NULL,
-  CONSTRAINT `chk_ft_values`   CHECK (`amount` > 0 AND `from_account_id` <> `to_account_id`)
+  CONSTRAINT `fk_ft_creator`   FOREIGN KEY (`created_by`)      REFERENCES `users` (`id`)            ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT `fk_ft_confirmer` FOREIGN KEY (`confirmed_by`)    REFERENCES `users` (`id`)            ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT `chk_ft_values`   CHECK (`amount` > 0 AND `from_account_id` <> `to_account_id`),
+  CONSTRAINT `chk_ft_maker_checker` CHECK (`confirmed_by` IS NULL OR `confirmed_by` <> `created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Center cash → bank deposit, center → Head Office remittance';
 
 DROP TABLE IF EXISTS `account_transactions`;

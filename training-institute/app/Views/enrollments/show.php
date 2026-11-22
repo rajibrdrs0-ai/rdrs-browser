@@ -1,5 +1,7 @@
 <?php
-/** @var array $e @var array $invoices @var array $items @var array $history @var array $targets @var float $paidValid */
+/** @var array $e @var array $invoices @var array $items @var array $history @var array $targets @var float $paidValid
+ *  @var array $waivers @var array $refunds @var array $receipts @var float $openBalance @var float $refundable */
+use App\Controllers\WaiverController;
 $this->layout('layouts/app', ['title' => __('admission.enrollment') . ' · ' . $e['batch_code']]);
 $st = ['admitted' => 'info', 'running' => 'success', 'completed' => 'dark', 'dropped_out' => 'warning', 'transferred' => 'secondary', 'cancelled' => 'danger'];
 $inv = ['unpaid' => 'warning', 'partial' => 'info', 'paid' => 'success', 'cancelled' => 'secondary'];
@@ -10,6 +12,7 @@ $active = in_array($e['status'], ['admitted', 'running'], true);
     <div><h1><?= e(loc($e, 'name')) ?> <span class="badge text-bg-<?= $st[$e['status']] ?>"><?= e(__('admission.status.' . $e['status'])) ?></span></h1>
       <div class="small text-body-secondary"><a href="<?= e(url('/students/' . $e['student_id'])) ?>"><?= e($e['registration_no']) ?></a> ·
         <a href="<?= e(url('/batches/' . $e['batch_id'])) ?>"><?= e($e['batch_code']) ?></a> · <?= e(loc($e, 'course')) ?> · <?= e(__('admission.roll')) ?> <?= e($e['roll_no']) ?></div></div></div>
+  <?php if ($openBalance > 0 && can('fee.collect')): ?><a class="btn btn-primary" href="<?= e(url('/fees/collect/' . $e['id'])) ?>"><i class="bi bi-cash-coin me-1"></i><?= e(__('fees.collect')) ?></a><?php endif; ?>
 </div>
 <div class="row g-3">
   <div class="col-lg-4">
@@ -33,6 +36,27 @@ $active = in_array($e['status'], ['admitted', 'running'], true);
       <button class="btn btn-sm btn-outline-danger"><?= e(__('common.save')) ?></button>
     </form>
     <?php endif; ?>
+    <?php if ($openBalance > 0 && can('waiver.request') && in_array($e['status'], ['admitted', 'running'], true)): ?>
+    <form method="post" action="<?= e(url('/enrollments/' . $e['id'] . '/waivers')) ?>" class="card card-body mb-3" novalidate><?= csrf_field() ?>
+      <h2 class="h6"><?= e(__('waivers.request')) ?></h2>
+      <div class="row g-2">
+        <div class="col-6"><?= form_select('waiver_type', __('waivers.type'), array_combine(WaiverController::TYPES, array_map(static fn($t) => __('waivers.types.' . $t), WaiverController::TYPES)), 'poor_fund', ['class' => 'form-select form-select-sm', 'placeholder' => false]) ?></div>
+        <div class="col-6"><?= form_input('amount', __('waivers.amount'), '', ['class' => 'form-control form-control-sm', 'inputmode' => 'decimal', 'required' => true, 'id' => 'waiver_amount']) ?></div>
+        <div class="col-12"><?= form_input('reason', __('waivers.reason'), '', ['class' => 'form-control form-control-sm', 'required' => true, 'id' => 'waiver_reason']) ?></div>
+      </div>
+      <button class="btn btn-sm btn-outline-primary mt-2"><?= e(__('waivers.submit')) ?></button>
+    </form>
+    <?php endif; ?>
+    <?php if ($refundable > 0 && can('refund.request')): ?>
+    <form method="post" action="<?= e(url('/enrollments/' . $e['id'] . '/refunds')) ?>" class="card card-body mb-3" novalidate><?= csrf_field() ?>
+      <h2 class="h6"><?= e(__('refunds.request')) ?> <span class="small fw-normal text-body-secondary"><?= e(__('refunds.refundable', ['amount' => money($refundable)])) ?></span></h2>
+      <div class="row g-2">
+        <div class="col-5"><?= form_input('amount', __('refunds.amount'), '', ['class' => 'form-control form-control-sm', 'inputmode' => 'decimal', 'required' => true, 'id' => 'refund_amount']) ?></div>
+        <div class="col-7"><?= form_input('reason', __('refunds.reason'), '', ['class' => 'form-control form-control-sm', 'required' => true, 'id' => 'refund_reason']) ?></div>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary mt-2"><?= e(__('refunds.request')) ?></button>
+    </form>
+    <?php endif; ?>
     <?php if ($targets !== []): ?>
     <form method="post" action="<?= e(url('/enrollments/' . $e['id'] . '/transfer')) ?>" class="card card-body mb-3" data-confirm="<?= e(__('common.confirm')) ?>" novalidate><?= csrf_field() ?>
       <h2 class="h6"><?= e(__('admission.transfer')) ?></h2><p class="small text-body-secondary"><?= e(__('admission.transfer_help')) ?></p>
@@ -45,7 +69,7 @@ $active = in_array($e['status'], ['admitted', 'running'], true);
 
   <div class="col-lg-8">
     <div class="card mb-3"><div class="card-header bg-body fw-semibold d-flex justify-content-between"><span><i class="bi bi-receipt me-1"></i><?= e(__('admission.invoices')) ?></span>
-      <span class="small fw-normal text-body-secondary"><?= e(__('admission.fees_note')) ?></span></div>
+      </div>
       <div class="table-responsive"><table class="table table-sm mb-0 align-middle">
         <thead class="table-light"><tr><th class="ps-3">#</th><th><?= e(__('admission.invoice_no')) ?></th><th><?= e(__('admission.due_on')) ?></th><th class="text-end"><?= e(__('admission.amount')) ?></th><th class="text-end"><?= e(__('admission.paid')) ?></th><th><?= e(__('admission.status_label')) ?></th></tr></thead>
         <tbody>
@@ -58,6 +82,24 @@ $active = in_array($e['status'], ['admitted', 'running'], true);
         <?php endforeach; ?>
         <?php if ($invoices === []): ?><tr><td colspan="6" class="ps-3 text-body-secondary"><?= e(__('common.no_records')) ?></td></tr><?php endif; ?>
         </tbody></table></div></div>
+    <?php if ($receipts !== []): ?>
+    <div class="card mb-3"><div class="card-header bg-body fw-semibold"><i class="bi bi-receipt-cutoff me-1"></i><?= e(__('fees.receipts')) ?></div>
+      <ul class="list-group list-group-flush small">
+        <?php foreach ($receipts as $r): ?><li class="list-group-item d-flex justify-content-between <?= $r['status'] === 'cancelled' ? 'text-body-secondary' : '' ?>">
+          <span><a href="<?= e(url('/fees/receipts/' . $r['id'])) ?>"><?= e($r['receipt_no']) ?></a> · <?= e(fmt_date($r['payment_date'])) ?> · <?= e(__('fees.methods.' . $r['method'])) ?>
+            <?php if ($r['status'] === 'cancelled'): ?><span class="badge text-bg-danger"><?= e(__('fees.status.cancelled')) ?></span><?php endif; ?></span>
+          <span class="<?= $r['status'] === 'cancelled' ? 'text-decoration-line-through' : 'fw-semibold' ?>"><?= money($r['amount']) ?></span></li><?php endforeach; ?>
+      </ul></div>
+    <?php endif; ?>
+    <?php if ($waivers !== [] || $refunds !== []): $wb = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'secondary', 'paid' => 'dark']; ?>
+    <div class="card mb-3"><div class="card-header bg-body fw-semibold"><i class="bi bi-check2-circle me-1"></i><?= e(__('waivers.title')) ?></div>
+      <ul class="list-group list-group-flush small">
+        <?php foreach ($waivers as $w): ?><li class="list-group-item d-flex justify-content-between"><span><?= e(__('waivers.types.' . $w['waiver_type'])) ?> · <?= e($w['reason']) ?> <span class="text-body-secondary">(<?= e($w['requester']) ?><?= $w['approver'] ? ' → ' . e($w['approver']) : '' ?>)</span></span>
+          <span><span class="badge text-bg-<?= $wb[$w['status']] ?>"><?= e(__('waivers.status.' . $w['status'])) ?></span> <?= money($w['amount']) ?></span></li><?php endforeach; ?>
+        <?php foreach ($refunds as $r): ?><li class="list-group-item d-flex justify-content-between"><span><?= e($r['refund_no']) ?> · <?= e($r['reason']) ?></span>
+          <span><span class="badge text-bg-<?= $wb[$r['status']] ?>"><?= e(__('waivers.status.' . $r['status'])) ?></span> −<?= money($r['amount']) ?></span></li><?php endforeach; ?>
+      </ul></div>
+    <?php endif; ?>
     <?php if ($history !== []): ?>
     <div class="card"><div class="card-header bg-body fw-semibold"><?= e(__('admission.history')) ?></div>
       <ul class="list-group list-group-flush small">

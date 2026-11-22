@@ -13,6 +13,14 @@ foreach ($menu as $item) {
     if ($pendingSection !== null) { $visible[] = $pendingSection; $pendingSection = null; }
     $visible[] = $item;
 }
+// Highlight only the most specific matching item (/fees/dues should not also light up /fees).
+$activeUrl = null;
+foreach ($visible as $item) {
+    if (!isset($item['url']) || empty($item['ready'])) { continue; }
+    $u = $item['url'];
+    $hit = $u === '/' ? $path === '/' : ($path === $u || str_starts_with($path, rtrim($u, '/') . '/'));
+    if ($hit && ($activeUrl === null || strlen($u) > strlen($activeUrl))) { $activeUrl = $u; }
+}
 ?><!doctype html>
 <html lang="<?= e(current_locale()) ?>">
 <head>
@@ -22,6 +30,7 @@ foreach ($menu as $item) {
 <link rel="stylesheet" href="<?= e(asset('assets/vendor/bootstrap/bootstrap.min.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('assets/vendor/bootstrap-icons/bootstrap-icons.min.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('assets/css/print.css')) ?>">
 <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
 </head>
 <body>
@@ -69,7 +78,7 @@ foreach ($menu as $item) {
           <?php if (isset($item['section'])): ?>
             <div class="nav-section"><?= e(__($item['section'])) ?></div>
           <?php elseif ($item['ready']): ?>
-            <?php $active = $item['url'] === '/' ? $path === '/' : str_starts_with($path, $item['url']); ?>
+            <?php $active = $item['url'] === $activeUrl; ?>
             <a class="nav-link<?= $active ? ' active' : '' ?>" href="<?= e(url($item['url'])) ?>">
               <i class="bi bi-<?= e($item['icon']) ?>"></i><span><?= e(__($item['label'])) ?></span>
             </a>

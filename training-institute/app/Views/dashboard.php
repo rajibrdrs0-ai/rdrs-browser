@@ -1,5 +1,5 @@
 <?php
-/** @var array $user @var array $stats @var array $centers @var array $modules @var int $permCount */
+/** @var array $user @var array $stats @var array $centers @var array $modules @var int $permCount @var ?array $finance @var int $approvals */
 use App\Services\Rbac;
 $this->layout('layouts/app', ['title' => __('dashboard.title')]);
 // Each card only appears for users holding the matching view permission.
@@ -26,6 +26,22 @@ $fmt = static fn(int $n): string => current_locale() === 'bn' ? bn_digits($n) : 
   </div>
   <?php endforeach; ?>
 </div>
+
+<?php if ($finance !== null || $approvals > 0): ?>
+<div class="row g-3 mb-3">
+  <?php if ($finance !== null): ?>
+  <div class="col-6 col-xl-3"><a class="text-decoration-none" href="<?= e(url('/fees/receipts')) ?>"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div><div class="stat-value fs-4"><?= money($finance['today']) ?></div><div class="text-body-secondary small"><?= e(__('fees.today')) ?></div></div></div></div></a></div>
+  <div class="col-6 col-xl-3"><a class="text-decoration-none" href="<?= e(url('/fees/dues')) ?>"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div><div><div class="stat-value fs-4"><?= money($finance['due']) ?></div><div class="text-body-secondary small"><?= e(__('fees.outstanding')) ?> · <span class="text-danger"><?= e(__('fees.overdue')) ?> <?= money($finance['overdue']) ?></span></div></div></div></div></a></div>
+  <?php endif; ?>
+  <?php if ($approvals > 0): ?>
+  <div class="col-12 col-xl-3"><div class="card stat-card h-100 border-warning"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon bg-warning-subtle text-warning-emphasis"><i class="bi bi-bell"></i></div><div><div class="stat-value fs-4"><?= num($approvals) ?></div>
+    <div class="small"><?= e(__('dashboard.approvals')) ?>: <a href="<?= e(url('/waivers')) ?>"><?= e(__('menu.waivers')) ?></a> · <a href="<?= e(url('/expenses', ['status' => 'pending'])) ?>"><?= e(__('menu.expenses')) ?></a></div></div></div></div></div>
+  <?php endif; ?>
+</div>
+<?php endif; ?>
 
 <div class="row g-3">
   <div class="col-lg-5">

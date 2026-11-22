@@ -9,6 +9,11 @@ use App\Controllers\Api\HealthController;
 use App\Controllers\AttendanceController;
 use App\Controllers\AuthController;
 use App\Controllers\EnrollmentController;
+use App\Controllers\ExpenseController;
+use App\Controllers\FeeController;
+use App\Controllers\FinanceController;
+use App\Controllers\RefundController;
+use App\Controllers\WaiverController;
 use App\Controllers\StudentController;
 use App\Controllers\BatchController;
 use App\Controllers\CenterController;
@@ -129,5 +134,37 @@ $router->group(['middleware' => ['csrf']], static function ($router): void {
         $router->get('/batches/{id:\d+}/attendance/take', [AttendanceController::class, 'take'], ['permission:attendance.take']);
         $router->post('/batches/{id:\d+}/attendance', [AttendanceController::class, 'save'], ['permission:attendance.take']);
         $router->post('/class-sessions/{sessionId:\d+}/lock', [AttendanceController::class, 'lock'], ['permission:attendance.lock']);
+
+        // Fees & money receipts
+        $router->get('/fees', [FeeController::class, 'index'], ['permission:fee.view']);
+        $router->get('/fees/dues', [FeeController::class, 'dues'], ['permission:fee.view']);
+        $router->get('/fees/collect/{enrollmentId:\d+}', [FeeController::class, 'collectForm'], ['permission:fee.collect']);
+        $router->post('/fees/collect/{enrollmentId:\d+}', [FeeController::class, 'collect'], ['permission:fee.collect']);
+        $router->get('/fees/receipts', [FeeController::class, 'receipts'], ['permission:fee.view']);
+        $router->get('/fees/receipts/{id:\d+}', [FeeController::class, 'receipt'], ['permission:fee.view']);
+        $router->post('/fees/receipts/{id:\d+}/cancel', [FeeController::class, 'cancelReceipt'], ['permission:fee.cancel_receipt']);
+
+        // Waivers & refunds
+        $router->get('/waivers', [WaiverController::class, 'index'], ['permission:waiver.request,waiver.approve,refund.request,refund.approve']);
+        $router->post('/enrollments/{enrollmentId:\d+}/waivers', [WaiverController::class, 'store'], ['permission:waiver.request']);
+        $router->post('/waivers/{id:\d+}/decide', [WaiverController::class, 'decide'], ['permission:waiver.approve']);
+        $router->post('/enrollments/{enrollmentId:\d+}/refunds', [RefundController::class, 'store'], ['permission:refund.request']);
+        $router->post('/refunds/{id:\d+}/decide', [RefundController::class, 'decide'], ['permission:refund.approve']);
+        $router->post('/refunds/{id:\d+}/pay', [RefundController::class, 'pay'], ['permission:fee.collect']);
+
+        // Expenses
+        $router->get('/expenses', [ExpenseController::class, 'index'], ['permission:expense.view']);
+        $router->get('/expenses/create', [ExpenseController::class, 'create'], ['permission:expense.create']);
+        $router->post('/expenses', [ExpenseController::class, 'store'], ['permission:expense.create']);
+        $router->post('/expenses/{id:\d+}/decide', [ExpenseController::class, 'decide'], ['permission:expense.approve']);
+        $router->get('/expenses/{id:\d+}/attachment', [ExpenseController::class, 'attachment'], ['permission:expense.view']);
+
+        // Accounts, transfers, cash book
+        $router->get('/finance/accounts', [FinanceController::class, 'accounts'], ['permission:finance.cashbook,finance.accounts_manage']);
+        $router->post('/finance/accounts', [FinanceController::class, 'storeAccount'], ['permission:finance.accounts_manage']);
+        $router->get('/finance/cashbook', [FinanceController::class, 'cashbook'], ['permission:finance.cashbook']);
+        $router->get('/finance/transfers', [FinanceController::class, 'transfers'], ['permission:finance.transfer']);
+        $router->post('/finance/transfers', [FinanceController::class, 'storeTransfer'], ['permission:finance.transfer']);
+        $router->post('/finance/transfers/{id:\d+}/decide', [FinanceController::class, 'decideTransfer'], ['permission:finance.transfer']);
     });
 });

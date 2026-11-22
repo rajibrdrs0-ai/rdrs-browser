@@ -27,9 +27,13 @@ return [
     ['label' => 'menu.certificates', 'icon' => 'award',            'url' => '/certificates', 'perm' => ['certificate.view'], 'ready' => false],
 
     ['section' => 'menu.finance'],
-    ['label' => 'menu.fees',     'icon' => 'cash-coin', 'url' => '/fees',     'perm' => ['fee.view'], 'ready' => false],
-    ['label' => 'menu.expenses', 'icon' => 'receipt',   'url' => '/expenses', 'perm' => ['expense.view'], 'ready' => false],
-    ['label' => 'menu.cashbook', 'icon' => 'journal-text', 'url' => '/cashbook', 'perm' => ['finance.cashbook'], 'ready' => false],
+    ['label' => 'menu.fees',      'icon' => 'cash-coin',    'url' => '/fees',              'perm' => ['fee.view'], 'ready' => true],
+    ['label' => 'menu.dues',      'icon' => 'hourglass-split', 'url' => '/fees/dues',      'perm' => ['fee.view'], 'ready' => true],
+    ['label' => 'menu.waivers',   'icon' => 'check2-circle', 'url' => '/waivers',          'perm' => ['waiver.request', 'waiver.approve', 'refund.request', 'refund.approve'], 'ready' => true],
+    ['label' => 'menu.expenses',  'icon' => 'receipt',      'url' => '/expenses',          'perm' => ['expense.view'], 'ready' => true],
+    ['label' => 'menu.cashbook',  'icon' => 'journal-text', 'url' => '/finance/cashbook',  'perm' => ['finance.cashbook'], 'ready' => true],
+    ['label' => 'menu.accounts',  'icon' => 'wallet2',      'url' => '/finance/accounts',  'perm' => ['finance.cashbook', 'finance.accounts_manage'], 'ready' => true],
+    ['label' => 'menu.transfers', 'icon' => 'arrow-left-right', 'url' => '/finance/transfers', 'perm' => ['finance.transfer'], 'ready' => true],
 
     ['section' => 'menu.hr'],
     ['label' => 'menu.staff',     'icon' => 'person-vcard', 'url' => '/staff',      'perm' => ['staff.view'], 'ready' => true],

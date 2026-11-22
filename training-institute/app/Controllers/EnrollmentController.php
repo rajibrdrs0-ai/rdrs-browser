@@ -84,6 +84,12 @@ final class EnrollmentController extends Controller
                                    AND status IN ('admission_open','running') ORDER BY start_date",
                     [$enrollment['course_id'], $enrollment['center_id'], $enrollment['batch_id']])
                 : [],
+            'waivers'   => Database::all('SELECT w.*, ru.name AS requester, au.name AS approver FROM fee_waivers w JOIN users ru ON ru.id = w.requested_by
+                                            LEFT JOIN users au ON au.id = w.approved_by WHERE w.enrollment_id = ? ORDER BY w.id DESC', [$enrollment['id']]),
+            'refunds'   => Database::all('SELECT r.*, ru.name AS requester FROM refunds r JOIN users ru ON ru.id = r.requested_by WHERE r.enrollment_id = ? ORDER BY r.id DESC', [$enrollment['id']]),
+            'receipts'  => Database::all('SELECT p.* FROM fee_payments p JOIN fee_invoices i ON i.id = p.invoice_id WHERE i.enrollment_id = ? ORDER BY p.id DESC', [$enrollment['id']]),
+            'openBalance' => \App\Services\Finance::openBalance((int) $enrollment['id']),
+            'refundable'  => \App\Services\Finance::refundable((int) $enrollment['id']),
             'paidValid' => (float) Database::value(
                 "SELECT COALESCE(SUM(p.amount), 0) FROM fee_payments p JOIN fee_invoices i ON i.id = p.invoice_id
                   WHERE i.enrollment_id = ? AND p.status = 'valid'", [$enrollment['id']]),
