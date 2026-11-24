@@ -1,0 +1,1 @@
+<div class="card"><div class="card-body empty"><i class="bi bi-emoji-smile"></i><h5>Welcome, <?= e(user()['name']) ?></h5><p>Use the menu on the left to open the modules you have access to.</p></div></div>

@@ -1,0 +1,9 @@
+<div class="page-head"><h1>Daily collection summary</h1><div class="actions"><?= \App\Core\View::partial('partials/export_buttons') ?></div></div>
+<?= \App\Core\View::partial('partials/filters', ['f' => ['center' => true, 'district' => true, 'extra' => '<div class="col-md-2"><label class="form-label">Date</label><input type="date" name="date" class="form-control form-control-sm" value="' . e($date) . '"></div>']]) ?>
+<div class="row g-3"><div class="col-lg-6"><div class="card"><div class="card-header">Summary · <?= e(fmt_date($date)) ?></div><table class="table table-sm mb-0">
+  <thead><tr><th>Center</th><th>Method</th><th>Collected by</th><th class="text-center">Receipts</th><th class="text-end">Amount</th></tr></thead><tbody>
+  <?php foreach ($rows as $r): ?><tr><td><?= e($r['center']) ?></td><td><?= e($r['method']) ?></td><td><?= e($r['collector']) ?></td><td class="text-center"><?= (int)$r['receipts'] ?></td><td class="text-end"><?= money($r['total'], false) ?></td></tr><?php endforeach; ?></tbody>
+  <tfoot class="fw-bold"><tr><td colspan="3">Total</td><td class="text-center"><?= array_sum(array_column($rows, 'receipts')) ?></td><td class="text-end"><?= money(array_sum(array_column($rows, 'total'))) ?></td></tr></tfoot></table></div></div>
+<div class="col-lg-6"><div class="card"><div class="card-header">Receipts</div><table class="table table-sm mb-0"><tbody>
+  <?php foreach ($receipts as $r): ?><tr class="<?= $r['status'] === 'reversed' ? 'text-decoration-line-through text-muted' : '' ?>"><td><?= e($r['receipt_no']) ?></td><td><?= e($r['student']) ?></td><td><?= e($r['method']) ?></td><td class="text-end"><?= money($r['amount'], false) ?></td></tr><?php endforeach; ?>
+  <?php if (!$receipts): ?><tr><td class="text-muted">No receipts on this date.</td></tr><?php endif; ?></tbody></table></div></div></div>

@@ -1,0 +1,18 @@
+<div class="page-head"><h1><?= e($s['name']) ?></h1><?= status_badge($s['employment_status']) ?><?= $s['is_trainer'] ? ' <span class="badge text-bg-info">Trainer</span>' : '' ?>
+  <div class="actions"><?php if (can('staff.edit')): ?><a class="btn btn-outline-primary btn-sm" href="<?= url('staff/edit', ['id' => $s['id']]) ?>"><i class="bi bi-pencil"></i> Edit</a><?php endif; ?>
+  <?php if (!$user && can('users.create')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= url('users/create', ['staff_id' => $s['id']]) ?>"><i class="bi bi-person-lock"></i> Create user account</a><?php endif; ?>
+  <?php if (can('staff.delete')): ?><form method="post" action="<?= url('staff/delete', ['id' => $s['id']]) ?>" class="d-inline" data-confirm="Delete this staff record?"><?= csrf_field() ?><button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button></form><?php endif; ?></div></div>
+<div class="row g-3"><div class="col-lg-5"><div class="card"><div class="card-body">
+  <div class="d-flex gap-3 mb-3"><?php if ($s['photo']): ?><img class="profile-photo" src="<?= e(file_url($s['photo'])) ?>"><?php else: ?><div class="photo-ph"><i class="bi bi-person"></i></div><?php endif; ?>
+    <div><div class="text-muted small">Employee ID</div><div class="fs-4 fw-bold text-brand"><?= e($s['employee_code']) ?></div><div class="small"><?= e($s['designation']) ?> · <?= e($s['department']) ?></div></div></div>
+  <dl class="kv small"><dt>Center</dt><dd><?= e($s['center']) ?></dd><dt>Mobile</dt><dd><?= e($s['mobile']) ?></dd><dt>Email</dt><dd><?= e($s['email']) ?></dd><dt>NID</dt><dd><?= e($s['nid']) ?></dd>
+    <dt>Gender</dt><dd><?= e($s['gender']) ?></dd><dt>Joining date</dt><dd><?= e(fmt_date($s['joining_date'])) ?></dd><dt>Present address</dt><dd><?= e($s['present_address']) ?></dd>
+    <dt>Permanent address</dt><dd><?= e($s['permanent_address']) ?></dd><?php if ($s['is_trainer']): ?><dt>Trade</dt><dd><?= e($s['trade']) ?></dd><dt>Classes taken</dt><dd><?= $classes ?></dd><?php endif; ?>
+    <dt>Attendance (90 days)</dt><dd><?= $att['total'] ? round($att['present'] * 100 / $att['total']) . '% of ' . (int)$att['total'] . ' days' : '—' ?></dd>
+    <dt>User account</dt><dd><?= $user ? (can('users.view') ? '<a href="' . url('users/edit', ['id' => $user['id']]) . '">' . e($user['username']) . '</a>' : e($user['username'])) . ' ' . status_badge($user['is_active'] ? 'active' : 'inactive') : '—' ?></dd>
+    <?php if ($s['remarks']): ?><dt>Remarks</dt><dd><?= e($s['remarks']) ?></dd><?php endif; ?></dl></div></div></div>
+<div class="col-lg-7">
+  <?php if ($s['is_trainer']): ?><div class="card mb-3"><div class="card-header">Batches (trainer assignment)</div><table class="table table-sm mb-0"><tbody><?php foreach ($batches as $b): ?><tr><td><a href="<?= url('batches/view', ['id' => $b['id']]) ?>"><?= e($b['batch_code']) ?></a></td><td><?= e($b['course']) ?></td><td class="small"><?= e(fmt_date($b['start_date'])) ?> – <?= e(fmt_date($b['end_date'])) ?></td><td><span class="badge text-bg-<?= e($b['color']) ?>"><?= e($b['status']) ?></span></td></tr><?php endforeach; ?>
+    <?php if (!$batches): ?><tr><td class="text-muted small">No batches assigned.</td></tr><?php endif; ?></tbody></table></div><?php endif; ?>
+  <div class="card"><div class="card-header">Assets in custody</div><table class="table table-sm mb-0"><tbody><?php foreach ($assets as $a): ?><tr><td><a href="<?= url('assets/view', ['id' => $a['id']]) ?>"><?= e($a['asset_code']) ?></a></td><td><?= e($a['name']) ?></td><td><?= status_badge($a['status']) ?></td></tr><?php endforeach; ?>
+    <?php if (!$assets): ?><tr><td class="text-muted small">None.</td></tr><?php endif; ?></tbody></table></div></div></div>

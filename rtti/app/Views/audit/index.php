@@ -1,0 +1,11 @@
+<div class="page-head"><h1><?= e(t('Audit Log')) ?></h1><div class="actions"><?= \App\Core\View::partial('partials/export_buttons') ?></div></div>
+<?= \App\Core\View::partial('partials/filters', ['f' => ['q' => 'Description or record ID', 'dates' => true,
+  'extra' => '<div class="col-6 col-md-2"><label class="form-label">Module</label><select name="module" class="form-select form-select-sm">' . kv_options(array_combine($modules, $modules) ?: [], $_GET['module'] ?? '', 'All') . '</select></div>'
+  . '<div class="col-6 col-md-2"><label class="form-label">User</label><select name="user_id" class="form-select form-select-sm">' . options($users, $_GET['user_id'] ?? '', 'id', 'name', 'All') . '</select></div>']]) ?>
+<div class="card"><div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Time</th><th>User</th><th>Module</th><th>Action</th><th>Description</th><th>Changes</th><th>IP</th></tr></thead><tbody>
+<?php foreach ($p['rows'] as $a): $o = json_decode((string)$a['old_values'], true) ?: []; $n = json_decode((string)$a['new_values'], true) ?: []; ?>
+  <tr><td class="text-nowrap small"><?= e(fmt_datetime($a['created_at'])) ?></td><td><?= e($a['uname'] ?? 'System') ?><br><small class="text-muted"><?= e($a['center']) ?></small></td><td><?= e($a['module']) ?></td><td><span class="badge text-bg-light border"><?= e($a['action']) ?></span></td>
+    <td class="small"><?= e($a['description']) ?><?= $a['record_id'] ? ' <span class="text-muted">#' . e($a['record_id']) . '</span>' : '' ?></td>
+    <td class="small"><?php if ($n): ?><details><summary><?= count($n) ?> field(s)</summary><?php foreach ($n as $k => $v): ?><div><code><?= e($k) ?></code>: <?= e(is_scalar($o[$k] ?? '') ? ($o[$k] ?? '') : json_encode($o[$k])) ?> → <?= e(is_scalar($v) ? $v : json_encode($v)) ?></div><?php endforeach; ?></details><?php elseif ($o): ?><details><summary>snapshot</summary><pre class="small mb-0" style="max-width:380px;white-space:pre-wrap"><?= e(json_encode($o, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre></details><?php endif; ?></td>
+    <td class="small"><?= e($a['ip_address']) ?></td></tr>
+<?php endforeach; ?></tbody></table></div><?= \App\Core\View::partial('partials/pagination', ['p' => $p]) ?></div>

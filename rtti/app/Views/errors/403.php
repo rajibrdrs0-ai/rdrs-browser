@@ -1,0 +1,1 @@
+<div class="card"><div class="card-body empty"><i class="bi bi-shield-lock text-danger"></i><h5>Access denied</h5><p><?= e($message ?? '') ?></p><a class="btn btn-primary btn-sm" href="<?= url('dashboard') ?>">Go to dashboard</a></div></div>

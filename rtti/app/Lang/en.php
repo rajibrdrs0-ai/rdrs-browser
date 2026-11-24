@@ -1,0 +1,2 @@
+<?php
+return [];  // English is the source language: keys are shown as-is.

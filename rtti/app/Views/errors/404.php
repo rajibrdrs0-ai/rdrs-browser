@@ -1,0 +1,1 @@
+<div class="card"><div class="card-body empty"><i class="bi bi-question-circle"></i><h5>Not found</h5><p><?= e($message ?? '') ?></p><a class="btn btn-primary btn-sm" href="<?= url('dashboard') ?>">Go to dashboard</a></div></div>
