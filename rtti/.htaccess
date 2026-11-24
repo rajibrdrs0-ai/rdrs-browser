@@ -4,6 +4,6 @@ Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteRule ^(app|config|database|storage|docs)(/|$) - [F,L]
-  RewriteCond %{REQUEST_URI} !/public/
+  RewriteCond %{REQUEST_FILENAME} !/public/
   RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

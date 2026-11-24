@@ -126,6 +126,7 @@ final class Installer
         if (!empty($opt['demo'])) {
             $log = array_merge($log, DemoData::load($uid, $hoId));
         }
+        DB::query("INSERT INTO system_settings (setting_key, setting_value, setting_group) VALUES ('installed_at', :d, 'system')", ['d' => date('Y-m-d H:i:s')]);
         @file_put_contents(ROOT_PATH . '/storage/installed.lock', date('c'));
         return $log;
     }

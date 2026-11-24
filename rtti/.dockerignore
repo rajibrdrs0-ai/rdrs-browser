@@ -1,0 +1,8 @@
+.git
+.env
+config/config.php
+storage/installed.lock
+storage/logs/*
+storage/backups/*
+storage/uploads/*
+*.zip

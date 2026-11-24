@@ -27,10 +27,10 @@ final class Sequence
         $key = substr($key, 0, 60);
 
         return DB::transaction(function () use ($key, $prefix) {
-            DB::query('INSERT IGNORE INTO sequences (seq_key, last_value) VALUES (:k, 0)', ['k' => $key]);
-            $last = (int)DB::value('SELECT last_value FROM sequences WHERE seq_key = :k FOR UPDATE', ['k' => $key]);
+            DB::query('INSERT IGNORE INTO sequences (seq_key, last_no) VALUES (:k, 0)', ['k' => $key]);
+            $last = (int)DB::value('SELECT last_no FROM sequences WHERE seq_key = :k FOR UPDATE', ['k' => $key]);
             $next = $last + 1;
-            DB::query('UPDATE sequences SET last_value = :v WHERE seq_key = :k', ['v' => $next, 'k' => $key]);
+            DB::query('UPDATE sequences SET last_no = :v WHERE seq_key = :k', ['v' => $next, 'k' => $key]);
             return preg_replace_callback('/\{SEQ(\d*)\}/', function ($m) use ($next) {
                 $pad = $m[1] === '' ? 1 : (int)$m[1];
                 return str_pad((string)$next, $pad, '0', STR_PAD_LEFT);

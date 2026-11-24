@@ -23,7 +23,7 @@ if (strlen($pass) < 8) {
 }
 try {
     $log = \App\Services\Installer::install(
-        ['host' => $o['host'] ?? '127.0.0.1', 'port' => (int)($o['port'] ?? 3306), 'name' => $o['db'] ?? 'rtti_training_management', 'user' => $o['user'] ?? 'root', 'pass' => $o['pass'] ?? ''],
+        ['host' => $o['host'] ?? '127.0.0.1', 'port' => (int)($o['port'] ?? 3306), 'name' => $o['db'] ?? 'rtti_training_management', 'user' => (string)($o['user'] ?? 'root'), 'pass' => (string)($o['pass'] ?? '')],
         ['admin_user' => $o['admin'] ?? 'admin', 'admin_pass' => $pass, 'admin_name' => $o['admin-name'] ?? 'System Administrator', 'admin_email' => null,
          'ho_name' => 'RTTI Head Office', 'ho_district' => 'Rangpur', 'demo' => isset($o['demo'])]
     );

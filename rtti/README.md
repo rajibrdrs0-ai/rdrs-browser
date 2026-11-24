@@ -21,6 +21,25 @@ Other modules: dashboard with live charts, global search, batches with capacity 
 * MySQL 8.0+ or MariaDB 10.6+
 * Apache with mod_rewrite (XAMPP, Windows Server or Linux) or Nginx
 
+## Installation with Docker (recommended for servers)
+
+Requires Docker Desktop (Windows/Mac) or Docker Engine with the compose plugin (Linux).
+
+```bash
+cd rtti
+cp .env.example .env        # then edit .env: set DB_PASS, DB_ROOT_PASS and ADMIN_PASSWORD
+docker compose up -d --build
+```
+Open **http://localhost:8080** and sign in with `ADMIN_USERNAME` / `ADMIN_PASSWORD` from `.env`.
+
+* On the first start the database is created automatically. Set `LOAD_DEMO_DATA=1` in `.env` **before** the first start to load sample data.
+* Data persists in Docker volumes: `db_data` (MySQL 8) and `rtti_storage` (uploads, backups, logs).
+* Logs: `docker compose logs -f app` · Stop: `docker compose down` · Update after code changes: `docker compose up -d --build`.
+* phpMyAdmin (optional): `docker compose --profile tools up -d` → http://localhost:8081
+* Database backup: `docker compose exec db mysqldump -u root -p rtti_training_management > rtti.sql`
+* **Start again from an empty database** (deletes all data!): `docker compose down -v`
+* For internet access, put a reverse proxy with HTTPS (Nginx, Caddy, Traefik) in front of port 8080.
+
 ## Installation (XAMPP on Windows)
 
 1. Copy the `rtti` folder to `C:\xampp\htdocs\rtti`.

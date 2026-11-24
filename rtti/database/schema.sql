@@ -1031,7 +1031,7 @@ CREATE TABLE asset_maintenance (
 -- Gap-free number generator (row-locked inside transactions)
 CREATE TABLE sequences (
   seq_key VARCHAR(60) NOT NULL PRIMARY KEY,
-  last_value INT UNSIGNED NOT NULL DEFAULT 0,
+  last_no INT UNSIGNED NOT NULL DEFAULT 0,
   updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
